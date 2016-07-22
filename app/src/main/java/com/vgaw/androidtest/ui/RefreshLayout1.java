@@ -1,20 +1,25 @@
-package com.vgaw.androidtest;
+package com.vgaw.androidtest.ui;
 
 import android.content.Context;
+import android.graphics.drawable.AnimationDrawable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.vgaw.androidtest.R;
 
 /**
  * from : Volodymyr
  * to : caojinmail@163.com
  * me : github.com/VolodymyrCj/
  */
-public class RefreshLayout extends LinearLayout {
+public class RefreshLayout1 extends FrameLayout {
     // 下拉状态
     private static final int STATUS_PULL_TO_REFRESH = 0;
     // 释放立即刷新状态
@@ -29,16 +34,16 @@ public class RefreshLayout extends LinearLayout {
 
     private View refreshView;
     private TextView tv_hint;
+    private ImageView iv_loading;
     private int refreshHeight;
 
     private ListView lv;
 
     private int status;
 
-    public RefreshLayout(Context context, AttributeSet attrs) {
+    public RefreshLayout1(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setOrientation(VERTICAL);
-        addRefreshHeader(context);
+        addRefreshView(context);
     }
 
     @Override
@@ -48,18 +53,19 @@ public class RefreshLayout extends LinearLayout {
         lv.setOnTouchListener(touchListener);
     }
 
-    private void addRefreshHeader(Context context) {
-        refreshView = LayoutInflater.from(context).inflate(R.layout.refresh_header, null);
+    private void addRefreshView(Context context) {
+        refreshView = LayoutInflater.from(context).inflate(R.layout.refresh_header1, null);
         tv_hint = (TextView) refreshView.findViewById(R.id.tv_hint);
+        iv_loading = (ImageView) refreshView.findViewById(R.id.iv_loading);
+        iv_loading.setImageResource(R.drawable.loadinganimation);
         changeRefreshHeaderHint(STATUS_REFRESH_FINISHED);
-        addView(refreshView);
+        addView(refreshView, new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         refreshHeight = refreshView.getMeasuredHeight();
-        ((MarginLayoutParams) refreshView.getLayoutParams()).topMargin = -refreshHeight;
     }
 
     private float lastY;
@@ -81,7 +87,7 @@ public class RefreshLayout extends LinearLayout {
                         if (dy > 0) {
                             moveDown((int) dy);
                         }else {
-                            if (-getTopMargin(refreshView) < refreshHeight){
+                            if (getTopMargin(lv) > 0){
                                 moveUp(-(int) dy);
                             }else {
                                 return false;
@@ -96,15 +102,19 @@ public class RefreshLayout extends LinearLayout {
                     case MotionEvent.ACTION_UP:
                         if (status == STATUS_PULL_TO_REFRESH) {
                             moveUp(refreshHeight + getTopMargin(refreshView));
+                            return true;
                         } else if (status == STATUS_RELEASE_TO_REFRESH) {
                             int backHeight = canRefresh();
                             if (backHeight > 0) {
                                 moveUp(backHeight);
                             }
-                            changeRefreshHeaderHint(STATUS_REFRESHING);
-                            if (listener != null){
-                                listener.onRefresh();
+                            if (status != STATUS_REFRESHING){
+                                changeRefreshHeaderHint(STATUS_REFRESHING);
+                                if (listener != null){
+                                    listener.onRefresh();
+                                }
                             }
+                            return true;
                         }
                         break;
                 }
@@ -128,15 +138,23 @@ public class RefreshLayout extends LinearLayout {
     /**
      * 通知刷新结束
      */
-    public void notifyRefreshFinished() {
-        changeRefreshHeaderHint(STATUS_REFRESH_FINISHED);
+    public void notifyFinished() {
         postDelayed(new Runnable() {
             @Override
             public void run() {
-                moveUp(refreshHeight + getTopMargin(refreshView));
-                changeRefreshHeaderHint(STATUS_PULL_TO_REFRESH);
+                changeRefreshHeaderHint(STATUS_REFRESH_FINISHED);
+                moveUp(getTopMargin(lv));
             }
-        }, 500);
+        }, 1000);
+
+    }
+
+    /**
+     * 通知刷新状态
+     */
+    public void notifyRefreshing(){
+        changeRefreshHeaderHint(STATUS_REFRESHING);
+        moveDown(tv_hint.getTop());
     }
 
     /**
@@ -144,14 +162,14 @@ public class RefreshLayout extends LinearLayout {
      * @param dy
      */
     private void moveDown(int dy) {
-        MarginLayoutParams marginLayoutParams = (MarginLayoutParams) refreshView.getLayoutParams();
+        MarginLayoutParams marginLayoutParams = (MarginLayoutParams) lv.getLayoutParams();
         int result = marginLayoutParams.topMargin + dy;
         // 防止溢出最顶端
-        if (result > 0) {
-            result = 0;
+        if (result > refreshHeight) {
+            result = refreshHeight;
         }
         marginLayoutParams.topMargin = result;
-        refreshView.setLayoutParams(marginLayoutParams);
+        lv.setLayoutParams(marginLayoutParams);
     }
 
     /**
@@ -159,14 +177,14 @@ public class RefreshLayout extends LinearLayout {
      * @param dy
      */
     private void moveUp(int dy){
-        MarginLayoutParams marginLayoutParams = (MarginLayoutParams) refreshView.getLayoutParams();
+        MarginLayoutParams marginLayoutParams = (MarginLayoutParams) lv.getLayoutParams();
         int result = marginLayoutParams.topMargin - dy;
         // 防止溢出最底端
-        if (-result > refreshHeight) {
-            result = -refreshHeight;
+        if (result < 0) {
+            result = 0;
         }
         marginLayoutParams.topMargin = result;
-        refreshView.setLayoutParams(marginLayoutParams);
+        lv.setLayoutParams(marginLayoutParams);
     }
 
     /**
@@ -174,7 +192,7 @@ public class RefreshLayout extends LinearLayout {
      * @return 偏移量
      */
     private int canRefresh() {
-        return getTopMargin(refreshView) + tv_hint.getTop();
+        return getTopMargin(lv) - tv_hint.getTop();
     }
 
     private int getTopMargin(View view) {
@@ -188,16 +206,21 @@ public class RefreshLayout extends LinearLayout {
         this.status = status;
         switch (status) {
             case STATUS_PULL_TO_REFRESH:
-                tv_hint.setText("下拉可以刷新");
-                break;
+                //tv_hint.setText("下拉可以刷新");
+                //break;
             case STATUS_RELEASE_TO_REFRESH:
-                tv_hint.setText("松开刷新");
+                //tv_hint.setText("松开刷新");
+                refreshView.setVisibility(VISIBLE);
                 break;
             case STATUS_REFRESHING:
-                tv_hint.setText("刷新中。。。");
+                ((AnimationDrawable) iv_loading.getDrawable()).start();
+                refreshView.setVisibility(VISIBLE);
+                //tv_hint.setText("刷新中。。。");
                 break;
             case STATUS_REFRESH_FINISHED:
-                tv_hint.setText("刷新完成");
+                //tv_hint.setText("刷新完成");
+                ((AnimationDrawable) iv_loading.getDrawable()).stop();
+                refreshView.setVisibility(INVISIBLE);
                 break;
         }
     }

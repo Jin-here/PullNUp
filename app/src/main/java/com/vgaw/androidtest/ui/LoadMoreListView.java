@@ -1,4 +1,4 @@
-package com.vgaw.androidtest;
+package com.vgaw.androidtest.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -7,6 +7,8 @@ import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.vgaw.androidtest.R;
 
 /**
  * from : Volodymyr

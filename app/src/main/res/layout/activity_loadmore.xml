@@ -3,12 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.vgaw.androidtest.LoadMoreListView
+    <com.vgaw.androidtest.ui.LoadMoreListView
         android:id="@+id/lv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="10dp"
-        android:dividerHeight="10dp"></com.vgaw.androidtest.LoadMoreListView>
+        android:dividerHeight="10dp"></com.vgaw.androidtest.ui.LoadMoreListView>
 
     <Button
         android:id="@+id/btn_refresh"

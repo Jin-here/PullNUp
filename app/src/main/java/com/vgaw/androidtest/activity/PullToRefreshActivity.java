@@ -1,10 +1,14 @@
-package com.vgaw.androidtest;
+package com.vgaw.androidtest.activity;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.vgaw.androidtest.EasyAdapter;
+import com.vgaw.androidtest.R;
+import com.vgaw.androidtest.ui.RefreshLayout;
 
 import java.util.ArrayList;
 
@@ -27,7 +31,7 @@ public class PullToRefreshActivity extends AppCompatActivity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        rl.notifyRefreshFinished();
+                        rl.notifyFinished();
                     }
                 }, 1000);
             }

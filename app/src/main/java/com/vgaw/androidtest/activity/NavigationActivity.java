@@ -1,4 +1,4 @@
-package com.vgaw.androidtest;
+package com.vgaw.androidtest.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -11,8 +11,8 @@ import android.content.Intent;
  * me : github.com/VolodymyrCj/
  */
 public class NavigationActivity extends Activity {
-    private String[] nameArray = new String[]{"下拉刷新", "上拉加载更多"};
-    private Class[] classArray = new Class[]{PullToRefreshActivity.class, LoadMoreActivity.class};
+    private String[] nameArray = new String[]{"下拉刷新", "下拉刷新1", "上拉加载更多"};
+    private Class[] classArray = new Class[]{PullToRefreshActivity.class, PullToRefreshActivity1.class, LoadMoreActivity.class};
     @Override
     protected void onResume() {
         super.onResume();

@@ -1,13 +1,13 @@
-package com.vgaw.androidtest;
+package com.vgaw.androidtest.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
+
+import com.vgaw.androidtest.ui.LoadMoreListView;
+import com.vgaw.androidtest.R;
 
 import java.util.ArrayList;
 import java.util.Random;
