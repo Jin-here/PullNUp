@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -77,6 +78,9 @@ public class RefreshLayout extends LinearLayout {
                     case MotionEvent.ACTION_MOVE:
                         nowY = event.getRawY();
                         float dy = nowY - lastY;
+                        if (dy < ViewConfiguration.get(getContext()).getScaledTouchSlop()){
+                            return false;
+                        }
                         lastY = nowY;
                         // 添加阻力
                         dy /= RESISTANCE;
