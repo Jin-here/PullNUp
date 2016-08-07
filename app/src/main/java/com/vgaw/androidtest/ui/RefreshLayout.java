@@ -2,6 +2,7 @@ package com.vgaw.androidtest.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -70,50 +71,54 @@ public class RefreshLayout extends LinearLayout {
     private OnTouchListener touchListener = new OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if (canPull()) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        lastY = event.getRawY();
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        nowY = event.getRawY();
-                        float dy = nowY - lastY;
-                        if (dy < ViewConfiguration.get(getContext()).getScaledTouchSlop()){
-                            return false;
-                        }
-                        lastY = nowY;
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    lastY = event.getRawY();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    lv.setLongClickable(false);
+                    nowY = event.getRawY();
+                    float dy = nowY - lastY;
+                    lastY = nowY;
+                    if (canPull()) {
                         // 添加阻力
                         dy /= RESISTANCE;
                         if (dy > 0) {
                             moveDown((int) dy);
-                        }else {
-                            if (-getTopMargin(refreshView) < refreshHeight){
+                        } else {
+                            if (-getTopMargin(refreshView) < refreshHeight) {
                                 moveUp(-(int) dy);
-                            }else {
+                            } else {
                                 return false;
                             }
                         }
                         if (canRefresh() > 0) {
                             changeRefreshHeaderHint(STATUS_RELEASE_TO_REFRESH);
-                        }else {
+                        } else {
                             changeRefreshHeaderHint(STATUS_PULL_TO_REFRESH);
                         }
                         return true;
-                    case MotionEvent.ACTION_UP:
-                        if (status == STATUS_PULL_TO_REFRESH) {
-                            moveUp(refreshHeight + getTopMargin(refreshView));
-                        } else if (status == STATUS_RELEASE_TO_REFRESH) {
-                            int backHeight = canRefresh();
-                            if (backHeight > 0) {
-                                moveUp(backHeight);
-                            }
+                    }
+                case MotionEvent.ACTION_UP:
+                    lv.setLongClickable(true);
+                    if (status == STATUS_PULL_TO_REFRESH) {
+                        moveUp(refreshHeight + getTopMargin(refreshView));
+                        changeRefreshHeaderHint(STATUS_REFRESH_FINISHED);
+                        return true;
+                    } else if (status == STATUS_RELEASE_TO_REFRESH) {
+                        int backHeight = canRefresh();
+                        if (backHeight > 0) {
+                            moveUp(backHeight);
+                        }
+                        if (status != STATUS_REFRESHING){
                             changeRefreshHeaderHint(STATUS_REFRESHING);
                             if (listener != null){
                                 listener.onRefresh();
                             }
                         }
-                        break;
-                }
+                        return true;
+                    }
+                    break;
             }
             return false;
         }
@@ -135,14 +140,13 @@ public class RefreshLayout extends LinearLayout {
      * 通知刷新结束
      */
     public void notifyFinished() {
-        changeRefreshHeaderHint(STATUS_REFRESH_FINISHED);
         postDelayed(new Runnable() {
             @Override
             public void run() {
+                changeRefreshHeaderHint(STATUS_REFRESH_FINISHED);
                 moveUp(refreshHeight + getTopMargin(refreshView));
-                changeRefreshHeaderHint(STATUS_PULL_TO_REFRESH);
             }
-        }, 500);
+        }, 1000);
     }
 
     /**
