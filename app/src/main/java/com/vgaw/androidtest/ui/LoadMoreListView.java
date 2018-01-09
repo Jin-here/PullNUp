@@ -30,7 +30,7 @@ public class LoadMoreListView extends ListView {
         super(context, attrs);
         initFooterView(context);
         setFooterDividersEnabled(false);
-        addFooterView(footerView);
+        addFooterView(footerView, null, false);
         setOnScrollListener(scrollListener);
 
     }
@@ -46,7 +46,7 @@ public class LoadMoreListView extends ListView {
             // 前提：必有footer
             // #1 firstVisibleItem == 0 && 最后一个非footer的item.getBottom + dividerheight > getheight，此时不刷新
             // #2 否则如果firstVisibleItem + visibleItemCount > totalItemCount - 1，此时刷新
-            if (totalItemCount == 0) {
+            if (totalItemCount == visibleItemCount) {
                 return;
             }
 
