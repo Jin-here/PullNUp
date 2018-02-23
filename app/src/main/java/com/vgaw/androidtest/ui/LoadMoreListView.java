@@ -44,14 +44,9 @@ public class LoadMoreListView extends ListView {
         @Override
         public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
             // 前提：必有footer
-            // #1 firstVisibleItem == 0 && 最后一个非footer的item.getBottom + dividerheight > getheight，此时不刷新
+            // #1 visibleItemCount == totalItemCount，此时不刷新
             // #2 否则如果firstVisibleItem + visibleItemCount > totalItemCount - 1，此时刷新
-            if (totalItemCount == visibleItemCount) {
-                return;
-            }
-
-            if (!(firstVisibleItem == 0 && getChildAt(visibleItemCount - 2).getBottom() + getDividerHeight() < getHeight())
-                    && firstVisibleItem + visibleItemCount > totalItemCount - 1) {
+            if (visibleItemCount != totalItemCount && firstVisibleItem + visibleItemCount > totalItemCount - 1) {
                 if (status == STATUS_FINISHED){
                     if (listener != null){
                         changeFooterHint(STATUS_LOADING);
